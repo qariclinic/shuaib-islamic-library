@@ -1,5 +1,6 @@
 name: Android CI
 
+# Trigger workflow on push or pull request to main branch
 on:
   push:
     branches:
@@ -14,18 +15,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout your repository
+      # 1️⃣ Checkout your repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up JDK
+      # 2️⃣ Set up JDK 17 for Android build
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
-      # Cache Gradle dependencies
+      # 3️⃣ Cache Gradle dependencies to speed up builds
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
@@ -36,17 +37,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # Build the app
+      # 4️⃣ Grant execute permission to Gradle wrapper
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./android/gradlew
+
+      # 5️⃣ Build Debug APK
       - name: Build Debug APK
         run: ./android/gradlew assembleDebug
 
-      # Optional: Build Release APK
-      #- name: Build Release APK
-      #  run: ./android/gradlew assembleRelease
+      # 6️⃣ Optional: Build Release APK
+      # - name: Build Release APK
+      #   run: ./android/gradlew assembleRelease
 
-      # Upload the APK as an artifact
+      # 7️⃣ Upload Debug APK as artifact (latest stable version)
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.2.6
         with:
           name: app-debug-apk
           path: ./android/app/build/outputs/apk/debug/app-debug.apk
